@@ -26,10 +26,10 @@ void Prompt(char cwd[])
 	uid = geteuid ();
 	pw = getpwuid (uid);
 
-	printf("%c[%dm%s", 0x1B, 32, pw->pw_name);
+	printf("%c[%dm%s", 0x1B, 94, pw->pw_name);
 	printf("%c[%dm", 0x1B, 0);
 	printf(":");
-	printf("%c[%dm%s", 0x1B, 34, cwd);
+	printf("%c[%dm%s", 0x1B, 92, cwd);
 	printf("%c[%dm", 0x1B, 0);
 	printf("$ ");
 
@@ -51,7 +51,7 @@ void help()
 	printf("Zaimplementowane polecenia:\n\
   exit - wyjscie z powloki\n\
   help - wyswietla pomoc\n\
-  pwd - wyswietla sciezke do aktualnego katalogu roboczego \n\
+  pwd - wyswietla aktualny katalog roboczy \n\
   ls [sciezka do katalogu] - wyswietla pliki w katalogu.\n\
   cd [sciezka do katalogu] - zmiana aktualnego katalogu roboczego\n\
   seq [start] [krok] [stop] - wyswietla sekwencje liczb\n\
@@ -94,14 +94,21 @@ void ls(char *path)
 	struct dirent *myfile;
 
 	dir = opendir(path);
-	while((myfile = readdir(dir)) != NULL)
+	if(dir != NULL)
 	{
-		if(strcmp(myfile->d_name, ".") == 0 || strcmp(myfile->d_name, "..") == 0)
+		while((myfile = readdir(dir)) != NULL)
 		{
-			continue;
+			if(strcmp(myfile->d_name, ".") == 0 || strcmp(myfile->d_name, "..") == 0)
+			{
+				continue;
+			}
+			printf(" %s\n", myfile->d_name);
 		}
-		printf(" %s\n", myfile->d_name);
-}
+	}
+	else
+	{
+		printf ("Cannot open directory '%s'\n", path);
+	}
 	closedir(dir);
 }
 
