@@ -224,7 +224,6 @@ int main()
 			{
 				execv(cmd[0], cmd);
 				printf("komenda inwalidzka. typnij 'help'\n");
-				break;
 			}
 			else
 			{
