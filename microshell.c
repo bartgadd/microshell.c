@@ -70,6 +70,7 @@ void cd(char *path, char cwd[], char prvwd[])
 	if(path == NULL || strcmp(path, ".") == 0 || strcmp(path, "./") == 0)
 	{
 		chdir(cwd);
+		strcpy(prvwd, cwd);
 	}
 	else if(strcmp(path, "-") == 0)
 	{
@@ -80,13 +81,29 @@ void cd(char *path, char cwd[], char prvwd[])
 		else
 		{
 			printf("%s\n", prvwd);
+			strcpy(prvwd, cwd);
 		}
 	}
-	strcpy(prvwd, cwd);
+	else
+	{
+		if(chdir(path) != 0)
+		{
+			perror(path);
+		}
+		else
+		{
+			strcpy(prvwd, cwd);
+		}
+	}
 }
 
 void ls(char *path)
 {
+	if(path == NULL)
+	{
+		path = ".";
+	}
+	
 	DIR *dir;
 	struct dirent *file;
 
@@ -203,25 +220,11 @@ int main()
 		}
 		else if(strcmp(cmd[0], "cd") == 0)
 		{
-			if(chdir(cmd[1]) !=  NULL)
-			{
-				perror(cmd[1]);
-			}
-			else
-			{
-				cd(cmd[1], cwd, prvwd);
-			}
+			cd(cmd[1], cwd, prvwd);
 		}
 		else if(strcmp(cmd[0], "ls") == 0)
 		{
-			if(cmd[1] == NULL)
-			{
-				ls(".");
-			}
-			else
-			{
-				ls(cmd[1]);
-			}
+			ls(cmd[1]);
 		}
 		else if(strcmp(cmd[0], "seq") == 0)
 		{
