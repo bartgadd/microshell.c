@@ -65,49 +65,46 @@ void pwd(char cwd[])
 	printf("%s\n", cwd);
 }
 
-void cd(char *cmd[], char cwd[], char prvwd[])
+void cd(char *path, char cwd[], char prvwd[])
 {
-	if(cmd[1] == NULL)
+	if(path == NULL || strcmp(path, ".") == 0 || strcmp(path, "./") == 0)
 	{
 		chdir(cwd);
 	}
-	else if(strcmp(cmd[1], "-") == 0)
+	else if(strcmp(path, "-") == 0)
 	{
-		chdir(prvwd);
-	}
-	else
-	{
-		if(chdir(cmd[1]) != 0)
+		if(chdir(prvwd) != NULL)
 		{
-			perror(cmd[1]);
+			perror(prvwd);
 		}
 		else
 		{
-			strcpy(prvwd, cwd);
+			printf("%s\n", prvwd);
 		}
 	}
+	strcpy(prvwd, cwd);
 }
 
 void ls(char *path)
 {
 	DIR *dir;
-	struct dirent *myfile;
+	struct dirent *file;
 
 	dir = opendir(path);
 	if(dir != NULL)
 	{
-		while((myfile = readdir(dir)) != NULL)
+		while((file = readdir(dir)) != NULL)
 		{
-			if(strcmp(myfile->d_name, ".") == 0 || strcmp(myfile->d_name, "..") == 0)
+			if(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0)
 			{
 				continue;
 			}
-			printf(" %s\n", myfile->d_name);
+			printf(" %s\n", file->d_name);
 		}
 	}
 	else
 	{
-		printf ("Cannot open directory '%s'\n", path);
+		printf("Cannot open directory '%s'\n", path);
 	}
 	closedir(dir);
 }
@@ -137,7 +134,6 @@ void seq(char * cmd[])
 			printf("%d\n", start);
 			start++;
 		}
-
 	}
 	else
 	{
@@ -153,9 +149,15 @@ void seq(char * cmd[])
 	}
 }
 
+void Clear()
+{
+	system("@cls||clear");
+}
+
 
 int main()
 {
+	Clear();
 	WelcomeScreen();
 
 	char cwd[256];
@@ -201,7 +203,14 @@ int main()
 		}
 		else if(strcmp(cmd[0], "cd") == 0)
 		{
-			cd(cmd, cwd, prvwd);
+			if(chdir(cmd[1]) !=  NULL)
+			{
+				perror(cmd[1]);
+			}
+			else
+			{
+				cd(cmd[1], cwd, prvwd);
+			}
 		}
 		else if(strcmp(cmd[0], "ls") == 0)
 		{
@@ -220,7 +229,7 @@ int main()
 		}
 		else if(strcmp(cmd[0], "clear") == 0)
 		{
-			system("@cls||clear");
+			Clear();
 		}
 		else
 		{
