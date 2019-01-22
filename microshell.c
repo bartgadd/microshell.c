@@ -12,6 +12,7 @@
 
 #define BLUE "\x1B[34;1m"
 #define GREEN "\x1B[32;1m"
+#define RED "\x1B[31;1m"
 #define RESET "\x1B[0m"
 
 
@@ -79,7 +80,7 @@ void cd(char *path, char cwd[], char prvwd[])
 	{
 		if(chdir(prvwd) != 0)
 		{
-			perror(prvwd);
+			printf(RED "cd: cannot open directory '%s'\n" RESET, prvwd);
 		}
 		else
 		{
@@ -91,7 +92,7 @@ void cd(char *path, char cwd[], char prvwd[])
 	{
 		if(chdir(path) != 0)
 		{
-			perror(path);
+			printf(RED "cd: cannot open directory '%s'\n" RESET, path);
 		}
 		else
 		{
@@ -124,7 +125,7 @@ void ls(char *path)
 	}
 	else
 	{
-		printf("ls: cannot open directory '%s'\n", path);
+		printf(RED "ls: cannot open directory '%s'\n" RESET, path);
 	}
 	closedir(dir);
 }
@@ -133,7 +134,7 @@ void cp(char * src, char * dest)
 {
 	if(src == NULL || dest == NULL)
 	{
-		printf("cd: argument(s) missing. type 'help'.\n");
+		printf(RED "cd: argument(s) missing. type 'help'.\n" RESET);
 	}
 	else
 	{
@@ -144,7 +145,7 @@ void cp(char * src, char * dest)
 		files[0] = open(src, O_RDONLY);
 		if (files[0] == -1)
 		{
-			printf("cp: cannot open %s.\n", src);
+			printf(RED "cp: cannot open %s.\n" RESET, src);
 		}
 		else
 		{
@@ -152,7 +153,7 @@ void cp(char * src, char * dest)
 			if(files[1] == -1)
 			{
 				close(files[0]);
-				printf("cp: cannot open / create %s.\n", dest);
+				printf(RED "cp: cannot open / create %s.\n" RESET, dest);
 			}
 			else
 			{			
@@ -176,7 +177,7 @@ void seq(char * cmd[])
 {
 	if(cmd[1] == NULL)
 	{
-		printf("seq: missing argument(s).\n");
+		printf(RED "seq: missing argument(s).\n" RESET);
 	}
 	else if(cmd[2] == NULL)
 	{
@@ -186,7 +187,7 @@ void seq(char * cmd[])
 		
 		if(r == cmd[1] || *r != '\0')
 		{
-			printf("seq: invalid argument: '%s'\n", cmd[1]);
+			printf(RED "seq: invalid argument: '%s'\n" RESET, cmd[1]);
 		}
 		else
 		{
@@ -207,11 +208,11 @@ void seq(char * cmd[])
 		
 		if(r == cmd[1] || *r != '\0')
 		{
-			printf("seq: invalid argument: '%s'\n", cmd[1]);
+			printf(RED "seq: invalid argument: '%s'\n" RESET, cmd[1]);
 		}
 		else if(r2 == cmd[2] || *r2 != '\0')
 		{
-			printf("seq: invalid argument: '%s'\n", cmd[2]);
+			printf(RED "seq: invalid argument: '%s'\n" RESET, cmd[2]);
 		}
 		else
 		{
@@ -232,15 +233,15 @@ void seq(char * cmd[])
 
 		if(r == cmd[1] || *r != '\0')
 		{
-			printf("seq: invalid argument: '%s'\n", cmd[1]);
+			printf(RED "seq: invalid argument: '%s'\n" RESET, cmd[1]);
 		}
 		else if(r2 == cmd[2] || *r2 != '\0')
 		{
-			printf("seq: invalid argument: '%s'\n", cmd[2]);
+			printf(RED "seq: invalid argument: '%s'\n" RESET, cmd[2]);
 		}
 		else if(r3 == cmd[3] || *r3 != '\0')
 		{
-			printf("seq: invalid argument: '%s'\n", cmd[3]);
+			printf(RED "seq: invalid argument: '%s'\n" RESET, cmd[3]);
 		}
 		else
 		{
@@ -275,7 +276,7 @@ int main()
 	r = regcomp(&regex, "^[ \n\t]*$", 0);
 	if(r != 0)
 	{
-		printf("Could not compile regex\n");
+		printf(RED "Could not compile regex\n" RESET);
 		exit(1);
 	}
 
@@ -327,7 +328,7 @@ int main()
 		}
 		else
 		{
-			printf("komenda inwalidzka. typnij 'help'\n");
+			printf(RED "komenda inwalidzka. typnij 'help'\n" RESET);
 		}
 	}
 	return 0;
