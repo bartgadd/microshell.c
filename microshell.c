@@ -2,19 +2,26 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <regex.h>
 #include <pwd.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+
+
+#define BLUE "\x1B[34;1m"
+#define GREEN "\x1B[32;1m"
+#define RESET "\x1B[0m"
+
 
 void WelcomeScreen()
 {
-	printf("\n\t============================================\n");
-	printf("\t|               microshell.c               |\n");
-	printf("\t--------------------------------------------\n");
-	printf("\t|           © Bartlomiej Gadzicki          |\n");
-	printf("\t============================================\n");
+	printf("\n\t==================================================\n");
+	printf("\t|                  microshell.c                  |\n");
+	printf("\t--------------------------------------------------\n");
+	printf("\t|              © Bartlomiej Gadzicki             |\n");
+	printf("\t==================================================\n");
 	printf("\n");
 }
 
@@ -26,12 +33,7 @@ void Prompt(char cwd[])
 	uid = geteuid ();
 	pw = getpwuid (uid);
 
-	printf("%c[%dm%s", 0x1B, 94, pw->pw_name);
-	printf("%c[%dm", 0x1B, 0);
-	printf(":");
-	printf("%c[%dm%s", 0x1B, 92, cwd);
-	printf("%c[%dm", 0x1B, 0);
-	printf("$ ");
+	printf(BLUE "%s" RESET ":" GREEN "%s" RESET "$ ", pw->pw_name, cwd);
 
 	fflush(stdout);
 }
@@ -47,17 +49,16 @@ void ParseCommand(char input[], char *cmd[])
 
 void help()
 {
-	printf("\nmicroshell.c © Bartlomiej Gadzicki\n");
-	printf("Zaimplementowane polecenia:\n\
+	printf("\nmicroshell.c © Bartlomiej Gadzicki\n\n\
+Zaimplementowane polecenia:\n\
   exit - wyjscie z powloki\n\
   help - wyswietla pomoc\n\
   pwd - wyswietla aktualny katalog roboczy \n\
-  ls [sciezka do katalogu] - wyswietla pliki w katalogu.\n\
-  cd [sciezka do katalogu] - zmiana aktualnego katalogu roboczego\n\
-  seq [start] [krok] [stop] - wyswietla sekwencje liczb\n\
-  clear - czyszczenie konsoli\n\n\
-powloka pozwala wywolac pogram z argumentami:\n\
-syntax: [sciezka do pliku] [argumenty]\n\n");
+  ls [path] - wyswietla pliki w katalogu.\n\
+  cd [path] - zmiana aktualnego katalogu roboczego\n\
+  cp [src] [dest] - kopiuje plik\n\
+  seq [start] [step] [stop] - wyswietla sekwencje liczb\n\
+  clear - czyszczenie konsoli\n\n");
 }
 
 void pwd(char cwd[])
@@ -74,7 +75,7 @@ void cd(char *path, char cwd[], char prvwd[])
 	}
 	else if(strcmp(path, "-") == 0)
 	{
-		if(chdir(prvwd) != NULL)
+		if(chdir(prvwd) != 0)
 		{
 			perror(prvwd);
 		}
@@ -121,47 +122,131 @@ void ls(char *path)
 	}
 	else
 	{
-		printf("Cannot open directory '%s'\n", path);
+		printf("ls: cannot open directory '%s'\n", path);
 	}
 	closedir(dir);
+}
+
+void cp(char * src, char * dest)
+{
+	if(src == NULL || dest == NULL)
+	{
+		printf("cd: argument(s) missing. type 'help'.\n");
+	}
+	else
+	{
+		char b[1024];
+		int files[2];
+		ssize_t c;
+
+		files[0] = open(src, O_RDONLY);
+		if (files[0] == -1)
+		{
+			printf("cp: cannot open %s.\n", src);
+		}
+		else
+		{
+			files[1] = open(dest, O_WRONLY | O_CREAT, 0777);
+			if(files[1] == -1)
+			{
+				close(files[0]);
+				printf("cp: cannot open / create %s.\n", dest);
+			}
+			else
+			{			
+				while((c = read(files[0], b, sizeof(b))) != 0)
+				{
+					write(files[1], b, c);
+				}
+				
+				struct stat p;
+				stat(src, &p);
+				chmod(dest, p.st_mode);
+
+				close(files[1]);
+			}
+		}
+
+	}
 }
 
 void seq(char * cmd[])
 {
 	if(cmd[1] == NULL)
 	{
-		printf("seq: missing operand\n");
+		printf("seq: missing argument(s).\n");
 	}
 	else if(cmd[2] == NULL)
 	{
-		int i = 1;
-		while(i <= atoi(cmd[1]))
+		long number;
+		char * r;
+		number = strtol(cmd[1], &r, 10);
+		
+		if(r == cmd[1] || *r != '\0')
 		{
-			printf("%d\n", i);
-			i++;
+			printf("seq: invalid argument: '%s'\n", cmd[1]);
+		}
+		else
+		{
+			int i = 1;
+			while(i <= number)
+			{
+				printf("%d\n", i);
+				i++;
+			}
 		}
 	}
 	else if(cmd[3] == NULL)
 	{
-		int start = atoi(cmd[1]);
-		int stop = atoi(cmd[2]);
-
-		while(start <= stop)
+		long start, stop;
+		char *r, *r2;
+		start = strtol(cmd[1], &r, 10);
+		stop = strtol(cmd[2], &r2, 10);
+		
+		if(r == cmd[1] || *r != '\0')
 		{
-			printf("%d\n", start);
-			start++;
+			printf("seq: invalid argument: '%s'\n", cmd[1]);
+		}
+		else if(r2 == cmd[2] || *r2 != '\0')
+		{
+			printf("seq: invalid argument: '%s'\n", cmd[2]);
+		}
+		else
+		{
+			while(start <= stop)
+			{
+				printf("%ld\n", start);
+				start++;
+			}
 		}
 	}
 	else
 	{
-		int start = atoi(cmd[1]);
-		int step = atoi(cmd[2]);
-		int stop = atoi(cmd[3]);
+		long start, step, stop;
+		char *r, *r2, *r3;
+		start = strtol(cmd[1], &r, 10);
+		step = strtol(cmd[2], &r2, 10);
+		stop = strtol(cmd[3], &r3, 10);
 
-		while(start <= stop)
+		if(r == cmd[1] || *r != '\0')
 		{
-			printf("%d\n", start);
-			start = start + step;
+			printf("seq: invalid argument: '%s'\n", cmd[1]);
+		}
+		else if(r2 == cmd[2] || *r2 != '\0')
+		{
+			printf("seq: invalid argument: '%s'\n", cmd[2]);
+		}
+		else if(r3 == cmd[3] || *r3 != '\0')
+		{
+			printf("seq: invalid argument: '%s'\n", cmd[3]);
+		}
+		else
+		{
+			while(start <= stop)
+			{
+				printf("%ld\n", start);
+				start = start + step;
+			}
 		}
 	}
 }
@@ -222,6 +307,10 @@ int main()
 		{
 			cd(cmd[1], cwd, prvwd);
 		}
+		else if(strcmp(cmd[0], "cp") == 0)
+		{
+			cp(cmd[1], cmd[2]);
+		}
 		else if(strcmp(cmd[0], "ls") == 0)
 		{
 			ls(cmd[1]);
@@ -236,19 +325,7 @@ int main()
 		}
 		else
 		{
-			pid_t child;
-			child = fork();
-
-			if(child == 0)
-			{
-				execv(cmd[0], cmd);
-				printf("komenda inwalidzka. typnij 'help'\n");
-				break;
-			}
-			else
-			{
-				waitpid(child, NULL, 0);
-			}
+			printf("komenda inwalidzka. typnij 'help'\n");
 		}
 	}
 	return 0;
