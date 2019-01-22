@@ -81,7 +81,7 @@ void cd(char *path, char cwd[], char prvwd[])
 	{
 		if(chdir(prvwd) != 0)
 		{
-			printf(RED "cd: cannot open directory '%s'\n" RESET, prvwd);
+			printf(RED "cd: '%s' no such file or directory.\n" RESET, prvwd);
 		}
 		else
 		{
@@ -93,7 +93,7 @@ void cd(char *path, char cwd[], char prvwd[])
 	{
 		if(chdir(path) != 0)
 		{
-			printf(RED "cd: cannot open directory '%s'\n" RESET, path);
+			printf(RED"cd: '%s' no such file or directory.\n" RESET, path);
 		}
 		else
 		{
@@ -126,7 +126,7 @@ void ls(char *path)
 	}
 	else
 	{
-		printf(RED "ls: cannot open directory '%s'\n" RESET, path);
+		printf(RED "cd: '%s' cant find directory.\n" RESET, path);
 	}
 	closedir(dir);
 }
@@ -146,7 +146,7 @@ void cp(char * src, char * dest)
 		files[0] = open(src, O_RDONLY);
 		if (files[0] == -1)
 		{
-			printf(RED "cp: cannot open %s.\n" RESET, src);
+			printf(RED "cp: no such file %s.\n" RESET, src);
 		}
 		else
 		{
