@@ -43,8 +43,10 @@ void ParseCommand(char input[], char *cmd[])
 	char **cmd_pointer;
 
 	cmd_pointer = cmd;
-	*cmd_pointer++ = strtok(input," \n\t");
-	while((*cmd_pointer++ = strtok(NULL," \n\t")));
+	cmd_pointer[0] = strtok(input," \n\t");
+	
+	cmd_pointer++;
+	while((*(cmd_pointer++) = strtok(NULL," \n\t")));
 }
 
 void help()
