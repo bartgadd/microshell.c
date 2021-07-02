@@ -9,7 +9,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-
 #define BLUE "\x1B[34;1m"
 #define GREEN "\x1B[32;1m"
 #define RED "\x1B[31;1m"
